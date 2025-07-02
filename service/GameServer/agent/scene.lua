@@ -97,3 +97,12 @@ s.client.stand = function()
 
     return {"stand",0,"stand成功"}
 end
+
+s.client.restart_game = function()
+    local isok = s.call(s.snode, s.sname, "restart_game", s.id, mynode, skynet.self())
+    if not isok then
+        return {"restart_game",1,"重开失败"}
+    end
+
+    return {"restart_game",0,"重开成功"}
+end
