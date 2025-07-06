@@ -64,45 +64,25 @@ end
 
 s.client.bet = function(msg)
     local isok = s.call(s.snode, s.sname, "bet", s.id, mynode, skynet.self(),tonumber(msg[2]))
-    if not isok then
-        return {"bet",1,"bet失败"}
-    end
-
-    return {"bet",0,"bet成功"}
+    return nil
 end
 
 s.client.start_sendcard = function()
     local isok = s.call(s.snode, s.sname, "start_sendcard", s.id, mynode, skynet.self())
-    if not isok then
-        return {"start_sendcard",1,"start失败"}
-    end
-
-    return {"start_sendcard",0,"start成功"}
+    return nil
 end
 
 s.client.hit = function()
     local isok = s.call(s.snode, s.sname, "hit", s.id, mynode, skynet.self())
-    if not isok then
-        return {"hit",1,"hit失败"}
-    end
-
-    return {"hit",0,"hit成功"}
+    return nil
 end
 
 s.client.stand = function()
     local isok = s.call(s.snode, s.sname, "stand", s.id, mynode, skynet.self())
-    if not isok then
-        return {"stand",1,"stand失败"}
-    end
-
-    return {"stand",0,"stand成功"}
+    return nil
 end
 
 s.client.restart_game = function()
     local isok = s.call(s.snode, s.sname, "restart_game", s.id, mynode, skynet.self())
-    if not isok then
-        return {"restart_game",1,"重开失败"}
-    end
-
-    return {"restart_game",0,"重开成功"}
+    return nil
 end

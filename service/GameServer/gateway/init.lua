@@ -26,7 +26,17 @@ function gateplayer()
 end
 
 local str_pack = function(cmd, msg)
-    return table.concat( msg, ",").."\r\n"
+    -- 将 msg 中的所有元素转换为字符串
+    local str_msg = {}
+    for _, v in ipairs(msg) do
+        if type(v) == "table" then
+            -- 如果元素是表类型，可以选择转换为字符串或处理
+            table.insert(str_msg, table.concat(v, "-"))
+        else
+            table.insert(str_msg, tostring(v))
+        end
+    end
+    return table.concat(str_msg, ",").."\r\n"
 end
 
 local str_unpack = function(msgstr)
@@ -64,6 +74,9 @@ s.resp.send = function(source, playerid, msg)
     local c = gplayer.conn
     if c == nil then
 		return
+    end
+    if #msg <= 0 or msg == nil then
+       return 
     end
     
     s.resp.send_by_fd(nil, c.fd, msg)
