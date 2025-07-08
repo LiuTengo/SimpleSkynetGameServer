@@ -110,7 +110,7 @@ local function calculate_game_result()
 
     local winner,loser = determine_winner(p1,p2)
     if winner and loser then
-        local winmsg = {"result",1,winner.playerid} --result --1——has winner
+        local winmsg = {"result",0,winner.playerid} --result --0——has winner
         broadcast(winmsg)
 
         winner.coins = winner.coins + winner.current_bet + loser.current_bet
@@ -118,23 +118,23 @@ local function calculate_game_result()
         reset_player_info(loser)
         
         --broadcast info
-        local loser_info_msg = {"update_player_info",loser.playerid,loser.coins,loser.current_bet,"empty"}
+        local loser_info_msg = {"update_player_info",0,loser.playerid,loser.coins,loser.current_bet,"empty"}
         broadcast(loser_info_msg)
-        local winner_info_msg = {"update_player_info",winner.playerid,winner.coins,winner.current_bet,"empty"}
+        local winner_info_msg = {"update_player_info",0,winner.playerid,winner.coins,winner.current_bet,"empty"}
         broadcast(winner_info_msg)
     else
         --no winner
         -- broadcast
-        local game_result_msg = {"result",0} --result --0——no winner
+        local game_result_msg = {"result",1} --result --1——no winner
         broadcast(game_result_msg)
     
         reset_player_coins(p1)
         reset_player_coins(p2)
     
         --broadcast info
-        local p1_info_msg = {"update_player_info",p1.playerid,p1.coins,p1.current_bet,"empty"}
+        local p1_info_msg = {"update_player_info",0,p1.playerid,p1.coins,p1.current_bet,"empty"}
         broadcast(p1_info_msg)
-        local p2_info_msg = {"update_player_info",p2.playerid,p2.coins,p2.current_bet,"empty"}
+        local p2_info_msg = {"update_player_info",0,p2.playerid,p2.coins,p2.current_bet,"empty"}
         broadcast(p2_info_msg)
     end
     game_status = 0
@@ -163,7 +163,7 @@ local function send_card_to_player(player)
 
     table.insert(player.handcards,c)
 
-    local send_card_msg = {"update_player_info",player.playerid,c.suit,c.value}
+    local send_card_msg = {"send_card_to_player",0,player.playerid,c.suit,c.value}
     broadcast(send_card_msg)
 
     calculate_player_score(player,c)
@@ -174,9 +174,9 @@ end
 local function reset_game()
     deck = {}
     game_status = 0
-    for _, p in pairs(players) do
-        init_player_info(p)
-    end
+    --for _, p in pairs(players) do
+    --    init_player_info(p)
+    --end
 end
 
 
@@ -202,6 +202,8 @@ s.resp.stand = function(source, playerid, node, agent)
     end
 
     p.player_status = 2
+    local stand_msg = {"player_stand", 0 ,p.playerid}
+    broadcast(stand_msg)
 
     local should_calculate_result = true
     for pid, player in pairs(players) do
@@ -234,7 +236,7 @@ s.resp.restart_game = function(source, playerid, node, agent)
     end
     if is_reset then
         game_status = 0
-        local restart_msg = {"game_restart"}
+        local restart_msg = {"game_restart",0}
         broadcast(restart_msg)
         return true
     end
@@ -253,7 +255,7 @@ s.resp.bet = function(source, playerid, node, agent,bet)
     if p then
         p.current_bet = p.current_bet + bet
         p.coins = p.coins - bet
-        local ret_msg = {"bet",0,"下注成功"}
+        local ret_msg = {"bet",0,bet}
         s.send(node, agent, "send", ret_msg)
         return true
     else
@@ -289,7 +291,7 @@ s.resp.start_sendcard = function(source, node, agent)
     end
     game_status = 1
 
-    local start_msg = {"start_msg"}
+    local start_msg = {"start_msg",0}
     broadcast(start_msg)
 
     return true
@@ -306,12 +308,13 @@ s.resp.enter = function(source, playerid, node, agent)
         --local player_info_msg = {"update_player_info",p.playerid,p.coins,p.current_bet,{}}
         --broadcast(player_info_msg)
 
-        --广播
-        local entermsg = {"enter", playerid}
-        broadcast(entermsg)
         --回应
         local ret_msg = {"enter",0,"进入成功"}
         s.send(node, agent, "send", ret_msg)
+
+        --广播
+        local entermsg = {"player_enter", playerid}
+        broadcast(entermsg)
 
         --send card
         if table_len(players) == 2 then
@@ -320,6 +323,19 @@ s.resp.enter = function(source, playerid, node, agent)
         end
     end
     return true
+end
+
+s.resp.get_player_info = function(source, playerid, node, agent)
+    local p = players[playerid]
+    
+    if p then
+        local p_info_msg = {"update_player_info",0,p.playerid,p.coins,p.current_bet,"empty"}
+        broadcast(p_info_msg)
+    else
+        local p_error_info = {"update_player_info",1}
+        broadcast(p_error_info)
+    end
+
 end
 
 s.resp.testFunc = function()

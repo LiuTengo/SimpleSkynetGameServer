@@ -67,6 +67,11 @@ s.client.bet = function(msg)
     return nil
 end
 
+s.client.get_player_info = function(msg)
+    local isok = s.call(s.snode, s.sname, "get_player_info", s.id, mynode, skynet.self())
+    return nil
+end
+
 s.client.start_sendcard = function()
     local isok = s.call(s.snode, s.sname, "start_sendcard", s.id, mynode, skynet.self())
     return nil
