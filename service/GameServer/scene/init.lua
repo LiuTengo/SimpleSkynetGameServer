@@ -109,6 +109,9 @@ local function calculate_game_result()
     local p2 = player_list[2]
 
     local winner,loser = determine_winner(p1,p2)
+
+    skynet.sleep(300)
+
     if winner and loser then
         local winmsg = {"result",0,winner.playerid} --result --0——has winner
         broadcast(winmsg)
@@ -257,6 +260,10 @@ s.resp.bet = function(source, playerid, node, agent,bet)
         p.coins = p.coins - bet
         local ret_msg = {"bet",0,bet}
         s.send(node, agent, "send", ret_msg)
+
+        local p_info_msg = {"update_player_info",0,p.playerid,p.coins,p.current_bet,"not empty"}
+        broadcast(p_info_msg)
+
         return true
     else
         local ret_msg = {"bet",1,"下注失败，玩家为空"}
@@ -303,6 +310,9 @@ s.resp.enter = function(source, playerid, node, agent)
         return false
     else
         local p =player(playerid,node,agent)
+
+
+
         players[playerid] = p
         reset_player_info(p)
         --local player_info_msg = {"update_player_info",p.playerid,p.coins,p.current_bet,{}}
@@ -313,9 +323,16 @@ s.resp.enter = function(source, playerid, node, agent)
         s.send(node, agent, "send", ret_msg)
 
         --广播
-        local entermsg = {"player_enter", playerid}
+        local entermsg = {"player_enter", 0 ,playerid}
         broadcast(entermsg)
 
+        for key, playerInScene in pairs(players) do
+            if playerInScene.playerid ~= playerid then
+                local playermsg = {"player_in_scene", 0 ,playerInScene.playerid}
+                broadcast(playermsg)
+            end
+        end
+        
         --send card
         if table_len(players) == 2 then
             --player full send card
